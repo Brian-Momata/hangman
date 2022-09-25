@@ -24,7 +24,9 @@ class Hangman
     while incorrect_letters.length < 8
       guess = player.guess.downcase
 
-      if guess.length > 1
+      if guess.to_i != 0 || guess == "0"
+        puts "Input Error: Use only letters"
+      elsif guess.length > 1
         puts "Input only ONE letter"
       elsif incorrect_letters.include?(guess) || dashes.include?(guess)
         puts "You've Already Guessed That Letter"
@@ -36,7 +38,6 @@ class Hangman
         end
       end
       if dashes == word.downcase.chars
-        puts word
         puts "You Win! The secret word was #{word}"
         break
       else
@@ -55,3 +56,5 @@ class Player
     guess
   end
 end
+player = Player.new
+Hangman.new(player)
