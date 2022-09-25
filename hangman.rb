@@ -16,6 +16,29 @@ class Hangman
     end
     filtered_array.sample
   end
+
+  def play_game(player, word)
+    dashes = Array.new(word.length) { "_" }
+    incorrect_letters = Array.new
+
+    while incorrect_letters.length < 8
+      guess = player.guess
+
+      if guess.length > 1
+        puts "Input only ONE letter"
+      elsif incorrect_letters.include?(guess) || dashes.include?(guess)
+        puts "You've Already Guessed That Letter"
+      elsif !word.include?(guess)
+        incorrect_letters << guess
+      else
+        word.chars.each_with_index do |letter, i|
+          dashes[i] = guess if guess == letter
+        end
+      end
+      puts dashes.join(" ")
+      puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
+    end
+  end
 end
 
 class Player
