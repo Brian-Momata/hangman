@@ -17,3 +17,11 @@ class Hangman
     filtered_array.sample
   end
 end
+
+class Player
+  def guess
+    puts "Guess one letter that might be part of the secret word"
+    guess = gets.chomp
+    guess
+  end
+end
