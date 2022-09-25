@@ -22,22 +22,29 @@ class Hangman
     incorrect_letters = Array.new
 
     while incorrect_letters.length < 8
-      guess = player.guess
+      guess = player.guess.downcase
 
       if guess.length > 1
         puts "Input only ONE letter"
       elsif incorrect_letters.include?(guess) || dashes.include?(guess)
         puts "You've Already Guessed That Letter"
-      elsif !word.include?(guess)
+      elsif !word.downcase.include?(guess)
         incorrect_letters << guess
       else
-        word.chars.each_with_index do |letter, i|
+        word.downcase.chars.each_with_index do |letter, i|
           dashes[i] = guess if guess == letter
         end
       end
-      puts dashes.join(" ")
-      puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
+      if dashes == word.downcase.chars
+        puts word
+        puts "You Win! The secret word was #{word}"
+        break
+      else
+       puts dashes.join(" ")
+       puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
+      end
     end
+    puts 'You lose!' unless dashes == word.downcase.chars
   end
 end
 
