@@ -1,7 +1,8 @@
+require 'yaml'
+
 class Hangman
   def initialize player
-    word = get_word
-    play_game(player, word)
+    play_game player
   end
 
   private
@@ -17,14 +18,28 @@ class Hangman
     filtered_array.sample
   end
 
-  def play_game(player, word)
+  def play_game player
+    word = get_word
     dashes = Array.new(word.length) { "_" }
     incorrect_letters = Array.new
 
     while incorrect_letters.length < 8
       guess = player.guess.downcase
 
-      if guess.to_i != 0 || guess == "0"
+      if guess == 'save'
+        save_game([dashes, incorrect_letters, word])
+      elsif guess == 'load'
+        begin 
+          saved_game = load_game
+          dashes = saved_game[0]
+          incorrect_letters = saved_game[1]
+          word = saved_game[2]
+        rescue
+          dashes = Array.new(word.length) { "_" }
+          incorrect_letters = Array.new
+          word = get_word
+        end
+      elsif guess.to_i != 0 || guess == "0"
         puts "Input Error: Use only letters"
       elsif guess.length > 1
         puts "Input only ONE letter"
@@ -41,17 +56,34 @@ class Hangman
         puts "You Win! The secret word was #{word}"
         break
       else
-       puts dashes.join(" ")
-       puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
+        separator = '===================================='
+        puts separator
+        puts "Secret Word: #{dashes.join(" ")}"
+        puts separator
+        puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
+        puts separator
       end
     end
     puts "You lose! The secret word was #{word}" unless dashes == word.downcase.chars
+  end
+
+  def save_game(objects)
+    Dir.mkdir('games') unless Dir.exist?('games')
+    yaml = YAML.dump(objects)
+    filename = 'games/saved_game.yaml'
+
+    File.open(filename, 'w') { |f| f.puts yaml }
+  end
+
+  def load_game
+    File.open('games/saved_game.yaml') { |f| YAML.load(f) }
   end
 end
 
 class Player
   def guess
-    puts "Guess one letter that might be part of the secret word"
+    puts "[Use 'save' to save progress and 'load' load an existing game]
+Guess a letter that might be part of the secret word"
     guess = gets.chomp
     guess
   end
