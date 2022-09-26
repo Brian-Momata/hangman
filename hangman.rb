@@ -45,7 +45,7 @@ class Hangman
        puts "Incorrect Guesses: #{incorrect_letters.join(" ")}"
       end
     end
-    puts 'You lose!' unless dashes == word.downcase.chars
+    puts "You lose! The secret word was #{word}" unless dashes == word.downcase.chars
   end
 end
 
