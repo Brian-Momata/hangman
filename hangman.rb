@@ -2,28 +2,28 @@ require 'yaml'
 
 module Game
   def intro
-    puts 'Playing Hangman in the console'
+    puts "Playing Hangman in the console\n\n"
     puts 'A secret word is automatically chosen and you have to guess one letter
 at each turn. You are allowed only 8 incorrect guesses. To win, you must find all
 letters in the word before using up all your allowed incorrect guesses'
-    puts '===================================='
+    puts "====================================\n\n"
   end
 
   def display(dashes, incorrect_letters)
     separator = '===================================='
-    puts "Secret Word: #{dashes.join(' ')}"
+    puts "\n\nSecret Word: #{dashes.join(' ')}"
     puts separator
     puts "Incorrect Guesses: #{incorrect_letters.join(' ')}"
-    puts separator
+    puts "#{separator}\n\n"
   end
 end
 
 class Hangman
   include Game
 
-  def initialize player
+  def initialize
     intro
-    play_game player
+    play_game
   end
 
   private
@@ -32,12 +32,19 @@ class Hangman
     dictionary = File.open('dictionary.txt')
     word_array = dictionary.readlines.collect(&:chomp)
     filtered_array = word_array.select do |word|
-      word if word.size >= 5 && word.size <= 12
+      word.size.between?(5,12)
     end
     filtered_array.sample.downcase
   end
 
-  def play_game(player)
+  def make_guess
+    puts "[Type 'save' to save progress]\n
+Guess a letter that might be part of the secret word"
+    guess = gets.chomp
+    guess
+  end
+
+  def play_game
     word = find_word
     dashes = Array.new(word.length) { '_' }
     incorrect_letters = []
@@ -67,16 +74,16 @@ class Hangman
         end
       end
 
-      guess = player.guess.downcase
+      guess = make_guess.downcase
 
       if guess == 'save'
         save_game([dashes, incorrect_letters, word])
       elsif guess.to_i != 0 || guess == '0'
-        puts 'Input Error: Use only letters'
+        puts "\n\nInput Error: Use only letters"
       elsif guess.length > 1
-        puts 'Input only ONE letter'
+        puts "\n\nInput only ONE letter"
       elsif incorrect_letters.include?(guess) || dashes.include?(guess)
-        puts "You've Already Guessed That Letter"
+        puts "\n\nYou've Already Guessed That Letter"
       elsif !word.include?(guess)
         incorrect_letters << guess
       else
@@ -86,11 +93,11 @@ class Hangman
       end
       display(dashes, incorrect_letters)
       if dashes == word.chars
-        puts "You Win! The secret word was #{word}"
+        puts "\n\nYou Win! The secret word was #{word}"
         break
       end
     end
-    puts "You lose! The secret word was #{word}" unless dashes == word.chars
+    puts "\nYou lose! The secret word was #{word}" unless dashes == word.chars
   end
 
   def save_game(objects)
@@ -106,13 +113,4 @@ class Hangman
   end
 end
 
-class Player
-  def guess
-    puts "[Type 'save' to save progress]
-Guess a letter that might be part of the secret word"
-    guess = gets.chomp
-    guess
-  end
-end
-player = Player.new
-Hangman.new(player)
+Hangman.new
