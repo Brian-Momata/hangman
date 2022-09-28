@@ -1,5 +1,6 @@
 require 'yaml'
 
+# Contains the intro and the method to display the game
 module Game
   def intro
     puts "Playing Hangman in the console\n\n"
@@ -18,10 +19,14 @@ letters in the word before using up all your allowed incorrect guesses'
   end
 end
 
+# Contains the game logic
 class Hangman
   include Game
 
   def initialize
+    @word
+    @incorrect_letters
+    @dashes
     intro
     play_game
   end
@@ -32,72 +37,58 @@ class Hangman
     dictionary = File.open('dictionary.txt')
     word_array = dictionary.readlines.collect(&:chomp)
     filtered_array = word_array.select do |word|
-      word.size.between?(5,12)
+      word.size.between?(5, 12)
     end
     filtered_array.sample.downcase
   end
 
   def make_guess
-    puts "[Type 'save' to save progress]\n
+    puts "\n[Type 'save' to save progress]\n
 Guess a letter that might be part of the secret word"
     guess = gets.chomp
     guess
   end
 
   def play_game
-    word = find_word
-    dashes = Array.new(word.length) { '_' }
-    incorrect_letters = []
+    @word = find_word
+    @dashes = Array.new(@word.length) { '_' }
+    @incorrect_letters = []
     beginning = true
 
-    while incorrect_letters.length < 8
-      while beginning == true
+    while @incorrect_letters.length < 8
+      if beginning == true
         puts 'Lets Begin!'
         puts 'Pick [1] to start a new game or [2] to load an existing one:'
         choice = gets.chomp.to_i
 
-        if choice == 2
-          begin
-            saved_game = load_game
-            dashes = saved_game[0]
-            incorrect_letters = saved_game[1]
-            word = saved_game[2]
-            beginning = false
-            display(dashes, incorrect_letters)
-          rescue
-            puts 'There are no saved games currently'
-            beginning = false
-          end
-        else
-          beginning = false
-          break
-        end
+        load_game if choice == 2
+        beginning = false
       end
 
       guess = make_guess.downcase
 
       if guess == 'save'
-        save_game([dashes, incorrect_letters, word])
+        save_game([@dashes, @incorrect_letters, @word])
       elsif guess.to_i != 0 || guess == '0'
-        puts "\n\nInput Error: Use only letters"
+        puts "\nInput Error: Use only letters"
       elsif guess.length > 1
-        puts "\n\nInput only ONE letter"
-      elsif incorrect_letters.include?(guess) || dashes.include?(guess)
-        puts "\n\nYou've Already Guessed That Letter"
-      elsif !word.include?(guess)
-        incorrect_letters << guess
+        puts "\nInput only ONE letter"
+      elsif @incorrect_letters.include?(guess) || @dashes.include?(guess)
+        puts "\nYou've Already Guessed That Letter"
+      elsif !@word.include?(guess)
+        @incorrect_letters << guess
       else
-        word.chars.each_with_index do |letter, i|
-          dashes[i] = guess if guess == letter
+        @word.chars.each_with_index do |letter, i|
+          @dashes[i] = guess if guess == letter
         end
       end
-      display(dashes, incorrect_letters)
-      if dashes == word.chars
-        puts "\n\nYou Win! The secret word was #{word}"
+      display(@dashes, @incorrect_letters)
+      if @dashes == @word.chars
+        puts "\nYou Win! The secret word was #{@word}"
         break
       end
     end
-    puts "\nYou lose! The secret word was #{word}" unless dashes == word.chars
+    puts "\nYou lose! The secret word was #{@word}" unless @dashes == @word.chars
   end
 
   def save_game(objects)
@@ -109,7 +100,15 @@ Guess a letter that might be part of the secret word"
   end
 
   def load_game
-    File.open('games/saved_game.yaml') { |f| YAML.safe_load(f) }
+    if File.exist?('games/saved_game.yaml')
+      saved_game = File.open('games/saved_game.yaml') { |f| YAML.safe_load(f) }
+      @dashes = saved_game[0]
+      @incorrect_letters = saved_game[1]
+      @word = saved_game[2]
+      display(@dashes, @incorrect_letters)
+    else
+      puts "\n\nThere are no saved games currently\n\n"
+    end
   end
 end
 
